@@ -7,7 +7,6 @@ library("gridExtra")
 library("grid")
 library("ggplot2")
 
-
 # Load and concatenate different samples 
 setwd("~/Thymus_aurora_run/2020-06-08_surface/compensated/2020-07-24/")
 file.names <- list.files(path = getwd(), pattern = ".fcs$")
@@ -15,7 +14,6 @@ flowset  <- read.ncdfFlowSet(files = file.names,
                               transformation = F,
                               phenoData = ,
                               truncate_max_range = F)
-
 
 # combine data in a matrix
 data_surf <- fsApply(flowset, exprs)
@@ -38,12 +36,11 @@ data_surf <- cbind(data_surf, gate.source_surf)
 data_surf <- cbind(data_surf, cell_id_surf)
 colnames(data_surf1)[31:32] <- c("gate_source", "cell_id")
 
-
 # extract sample id from string in fcs files and replace
 sample_id_surf <- as.numeric(gsub("[^0-9]", "", file.names))
 sample_id_surf <- as.numeric(gsub("2020060819", "", sample_id_surf))
 sample_gate_surf <- cbind(unique(data_surf[,"gate_source"]), sample_id_surf)
-colnames(sample_gate_surf1) <- c("gate_source", "sample_id")
+colnames(sample_gate_surf) <- c("gate_source", "sample_id")
 
 data_surf_sid <- merge(data_surf, sample_gate_surf, by= "gate_source")
 
@@ -53,7 +50,7 @@ data_surf <-  data_surf_sid
 save(data_surf, file="2020-07-24_Thymus_surf_untransf.RDa")
 
 # convert to matrix
-data_matrix_surf1 <- data.matrix(data_surf1[,c(markernames(fs_surf), "cell_id", "gate_source", "sample_id")])
+data_matrix_surf <- data.matrix(data_surf[,c(markernames(fs_surf), "cell_id", "gate_source", "sample_id")])
 
 ### transform data
 # note: cofactors have been chosen on na indiividual basis depending on the separation of positive and negative fraction
@@ -86,14 +83,12 @@ data.trans_surf[,"ICOS"] <- asinh(150*sinh(data.trans_surf[,"ICOS"])/2000)
 
 data.trans_surf[,"cell_id"] <- data_surf[,"cell_id"]
 
-
 ## shift to 0
 q.vector <- apply(data.trans_surf, 2, function(x) quantile(x, 0.001, names = F))
 data.shift <- data.trans_surf
 data.shift <- sweep(data.shift, 2, q.vector)
 
-data.shift[,c("CD8", "gate_source")] <- sweep(data.trans_surf1[,c("CD8", "gate_source")], 2, quantile(data.trans_surf1[,c("CD8", "gate_source")], 0.01, names = F))
-
+data.shift[,c("CD8", "gate_source")] <- sweep(data.trans_surff[,c("CD8", "gate_source")], 2, quantile(data.trans_surf[,c("CD8", "gate_source")], 0.01, names = F))
 
 # normalize based on the 99.99th percentile to have everything between 0 and 1
 data.trans.new_surf <- data.shift
@@ -106,9 +101,7 @@ data.trans.new_surf[,"cell_id"] <- data_surf[,"cell_id"]
 data.trans.new_surf[,"gate_source"] <- data_surf[,"gate_source"]
 data.trans.new_surf[,"sample_id"] <- data_surf[,"sample_id"]
 
-
-
-
+                         
 ## plot all marker vs each other in order to evaluate transformation
 # subsample cells for plotting
 n_cells <- 50000
