@@ -8,6 +8,9 @@ library("reshape2")
 library("gplots")
 library("ComplexHeatmap")
 library("ConsensusClusterPlus")
+library("FlowSOM")
+library("flowCore")
+library("ncdfFlow")
 
 
 # read data
